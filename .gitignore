@@ -7,7 +7,16 @@
 dist
 
 # Claude
-.CLAUDE.md
+CLAUDE.md
+.Claude.md
+
+# Documentation
+REQUIREMENTS.md
+THEMING.md
+
+# Database files
+*.db
+finance_dump.sql
 
 # Node dependencies
 node_modules
