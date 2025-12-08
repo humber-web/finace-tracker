@@ -211,11 +211,11 @@ const formatDate = (date: string) => {
                 
                 />
               </UBadge>
-              <UBadge v-else color="neutral" variant="subtle">
+              <UBadge v-else color="neutral" variant="soft">
                 <UIcon
                   name="i-heroicons-question-mark-circle"
                   class="w-5 h-5 sm:w-6 sm:h-6"
-                
+
                 />
               </UBadge>
             </div>

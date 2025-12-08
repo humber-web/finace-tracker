@@ -74,9 +74,8 @@ const items = computed((): NavigationMenuItem[] => [{
           color="neutral"
           variant="ghost"
           size="lg"
-          @click="isSidebarOpen = !isSidebarOpen"
+          @click.stop="isSidebarOpen = true"
           aria-label="Abrir menu"
-          class=""
           />
           <div class="w-full flex justify-between items-center">
             <h2 class="text-lg font-semibold">{{ items.find(i => i.active)?.label || 'Dashboard' }}</h2>

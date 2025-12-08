@@ -14,3 +14,25 @@ select,
 textarea {
   font-size: 16px !important;
 }
+
+/* Fix iOS modal/sidebar flickering and touch handling */
+@supports (-webkit-touch-callout: none) {
+  /* Prevent double-tap zoom on buttons */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Prevent tap highlight flash */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth transitions for modals/slideovers */
+  [data-state="open"],
+  [data-state="closed"] {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
