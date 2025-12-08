@@ -76,20 +76,20 @@ export default defineEventHandler(async (event) => {
     if (projectedPercent >= 100) {
       if (percentUsed >= 100) {
         alertLevel = 'critical'
-        message = `Budget exceeded! You've spent ${percentUsed.toFixed(0)}% of your budget.`
+        message = `Orçamento excedido! Você gastou ${percentUsed.toFixed(0)}% do seu orçamento.`
       } else if (projectedPercent >= 120) {
         alertLevel = 'critical'
-        message = `On track to exceed budget by ${(projectedPercent - 100).toFixed(0)}%! Consider reducing spending.`
+        message = `Você está projetando exceder o orçamento em ${(projectedPercent - 100).toFixed(0)}%. Considere reduzir os gastos.`
       } else if (projectedPercent >= 110) {
         alertLevel = 'danger'
-        message = `Projected to exceed budget by ${(projectedPercent - 100).toFixed(0)}%. Slow down spending.`
+        message = `Projetado para exceder o orçamento em ${(projectedPercent - 100).toFixed(0)}%. Reduza os gastos.`
       } else {
         alertLevel = 'danger'
-        message = `Trending toward budget limit. ${daysRemaining} days remaining.`
+        message = `Tendência de ultrapassar o limite do orçamento. Faltam ${daysRemaining} dias.`
       }
     } else if (projectedPercent >= 85) {
       alertLevel = 'warning'
-      message = `Approaching budget limit. Currently at ${percentUsed.toFixed(0)}%, projected ${projectedPercent.toFixed(0)}%.`
+      message = `Aproximando-se do limite do orçamento. Atualmente em ${percentUsed.toFixed(0)}%, projetado ${projectedPercent.toFixed(0)}%.`
     }
 
     // Only include budgets with alerts
