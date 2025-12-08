@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
 
 
 const route = useRoute()
@@ -45,6 +46,7 @@ const items = computed((): NavigationMenuItem[] => [{
 </script>
 
 <template>
+  <SpeedInsights />
   <UDashboardGroup>
     <UDashboardSidebar v-model:open="isSidebarOpen" mode="slideover">
       <template #header>
