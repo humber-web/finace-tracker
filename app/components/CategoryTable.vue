@@ -10,23 +10,39 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 type Category = {
   id: number
   name: string
-  type: string
+  type: string // 'income' | 'expense'
   color: string | null
   icon: string | null
   createdAt: string | Date
+  isSystem: boolean
 }
 
 interface Props {
   categories: Category[]
+  pageSize?: number
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  pageSize: 10
+})
+
 const emit = defineEmits<{
   edit: [category: Category]
   delete: [category: Category]
 }>()
 
 const table = useTemplateRef('table')
+
+// Pagination state
+const page = ref(1)
+const pageCount = computed(() => Math.ceil(props.categories.length / props.pageSize))
+
+// Paginated data
+const paginatedCategories = computed(() => {
+  const start = (page.value - 1) * props.pageSize
+  const end = start + props.pageSize
+  return props.categories.slice(start, end)
+})
 
 function getBadgeColor(color: string | null): 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' {
   const colorMap: Record<string, 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'> = {
@@ -97,7 +113,7 @@ const columns: TableColumn<Category>[] = [{
 
     return h(UBadge, {
       color: badgeColor,
-      variant: 'subtle',
+      variant: 'outline',
       size: 'sm'
     }, () => color || 'gray')
   }
@@ -121,6 +137,19 @@ const columns: TableColumn<Category>[] = [{
   id: 'actions',
   enableHiding: false,
   cell: ({ row }) => {
+    const category = row.original
+
+    // Don't show actions for system categories
+    if (category.isSystem) {
+      return h('div', { class: 'text-right' },
+        h(UBadge, {
+          color: 'neutral',
+          variant: 'subtle',
+          size: 'sm'
+        }, () => 'Sistema')
+      )
+    }
+
     const items = [{
       label: 'Editar',
       icon: 'i-heroicons-pencil-square',
@@ -153,11 +182,25 @@ const columns: TableColumn<Category>[] = [{
 </script>
 
 <template>
-  <div class="overflow-x-auto -mx-4 sm:mx-0">
-    <UTable
-      ref="table"
-      :data="categories"
-      :columns="columns"
-    />
+  <div class="space-y-4">
+    <div class="overflow-x-auto -mx-4 sm:mx-0">
+      <UTable
+        ref="table"
+        :data="paginatedCategories"
+        :columns="columns"
+      />
+    </div>
+
+    <div class="flex justify-between items-center" v-if="pageCount > 1">
+      <div class="text-sm text-gray-500 dark:text-gray-400">
+        Mostrando {{ (page - 1) * pageSize + 1 }} a {{ Math.min(page * pageSize, categories.length) }} de {{ categories.length }} categorias
+      </div>
+
+      <UPagination
+        v-model:page="page"
+        :total="categories.length"
+        :page-size="pageSize"
+      />
+    </div>
   </div>
 </template>

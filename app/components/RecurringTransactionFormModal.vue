@@ -158,147 +158,119 @@ defineExpose({
     <!-- Main Form Fields -->
     <div class="space-y-5 mb-6">
       <!-- Amount -->
-      <div>
-        <UFormGroup label="Valor" required class="space-y-2">
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Valor <span class="text-red-500">*</span>
-            </span>
-          </template>
-          <UInput
-            v-model="state.amount"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="0.00"
-            icon="i-heroicons-currency-dollar"
-            size="md"
-            class="w-full"
-            required
-          />
-        </UFormGroup>
-      </div>
+      <UFormField
+        label="Valor"
+        help="Insira o valor da transação recorrente."
+        required
+      >
+        <UInput
+          v-model="state.amount"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+          icon="i-heroicons-currency-dollar"
+          size="md"
+          class="w-full"
+        />
+      </UFormField>
 
       <!-- Description -->
-      <div>
-        <UFormGroup label="Descrição" required class="space-y-2">
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Descrição <span class="text-red-500">*</span>
-            </span>
-          </template>
-          <UInput
-            v-model="state.description"
-            placeholder="ex: Aluguel mensal"
-            size="md"
-            class="w-full"
-            maxlength="100"
-            required
-          />
-          <p class="text-xs text-gray-500 dark:text-gray-400 text-right">
-            {{ state.description.length }}/100
-          </p>
-        </UFormGroup>
-      </div>
+      <UFormField
+        label="Descrição"
+        :help="`${state.description.length}/100 caracteres`"
+        required
+      >
+        <UInput
+          v-model="state.description"
+          placeholder="ex: Aluguel mensal"
+          size="md"
+          maxlength="100"
+          class="w-full"
+        />
+      </UFormField>
 
       <!-- Frequency -->
-      <div>
-        <UFormGroup label="Frequência" required class="space-y-2">
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Frequência <span class="text-red-500">*</span>
-            </span>
-          </template>
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              v-for="option in frequencyOptions"
-              :key="option.value"
-              type="button"
-              @click="state.frequency = option.value"
-              :class="[
-                'px-4 py-2 rounded-lg border-2 transition-all font-medium text-sm',
-                state.frequency === option.value
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-300'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-              ]"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-        </UFormGroup>
-      </div>
+      <UFormField
+        label="Frequência"
+        help="Selecione com que frequência a transação se repete."
+        required
+      >
+        <UButtonGroup orientation="horizontal" class="w-full flex gap-2">
+          <UButton
+            v-for="option in frequencyOptions"
+            :key="option.value"
+            :label="option.label"
+            :variant="state.frequency === option.value ? 'solid' : 'outline'"
+            :color="state.frequency === option.value ? 'primary' : 'neutral'"
+            @click="state.frequency = option.value"
+            class="flex-1"
+          />
+        </UButtonGroup>
+      </UFormField>
 
       <!-- Start Date -->
-      <div>
-        <UFormGroup label="Data de Início" required class="space-y-2">
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Data de Início <span class="text-red-500">*</span>
-            </span>
-          </template>
-          <div class="flex items-center gap-2">
-            <UInput
-              :value="startCalendarDate ? `${startCalendarDate.day}/${startCalendarDate.month}/${startCalendarDate.year}` : ''"
-              disabled
-              size="md"
-              class="w-full"
-            />
-            <UPopover :popper="{ placement: 'bottom-start' }">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                icon="i-lucide-calendar"
-                aria-label="Selecione uma data"
-              />
-              <template #content>
-                <UCalendar v-model="startCalendarDate" class="p-2" />
-              </template>
-            </UPopover>
-          </div>
-        </UFormGroup>
-      </div>
-
-      <!-- End Date (Optional) -->
-      <div>
-        <UFormGroup label="Data de Término" class="space-y-2">
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Data de Término <span class="text-xs text-gray-500 dark:text-gray-400">(Opcional)</span>
-            </span>
-          </template>
-          <div class="flex items-center gap-2">
-            <UInput
-              :value="endCalendarDate ? `${endCalendarDate.day}/${endCalendarDate.month}/${endCalendarDate.year}` : 'Sem data final'"
-              disabled
-              size="md"
-              class="w-full"
-            />
-            <UPopover :popper="{ placement: 'bottom-start' }">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                icon="i-lucide-calendar"
-                aria-label="Selecione uma data"
-              />
-              <template #content>
-                <UCalendar v-model="endCalendarDate" class="p-2" />
-              </template>
-            </UPopover>
+      <UFormField
+        label="Data de Início"
+        required
+      >
+        <div class="flex items-center gap-2">
+          <UInput
+            :value="startCalendarDate ? `${startCalendarDate.day}/${startCalendarDate.month}/${startCalendarDate.year}` : ''"
+            disabled
+            size="md"
+            class="flex-1"
+          />
+          <UPopover :popper="{ placement: 'bottom-start' }">
             <UButton
-              v-if="endCalendarDate"
-              color="warning"
+              color="neutral"
               variant="ghost"
               size="sm"
-              icon="i-heroicons-x-mark"
-              @click="endCalendarDate = null"
-              aria-label="Limpar data"
+              icon="i-lucide-calendar"
+              aria-label="Selecione uma data"
             />
-          </div>
-          <p class="text-xs text-gray-500 mt-1">Deixe vazio para sem data final</p>
-        </UFormGroup>
-      </div>
+            <template #content>
+              <UCalendar v-model="startCalendarDate" class="p-2" />
+            </template>
+          </UPopover>
+        </div>
+      </UFormField>
+
+      <!-- End Date (Optional) -->
+      <UFormField
+        label="Data de Término (Opcional)"
+        help="Deixe vazio para recorrência sem data final."
+      >
+        <div class="flex items-center gap-2">
+          <UInput
+            :value="endCalendarDate ? `${endCalendarDate.day}/${endCalendarDate.month}/${endCalendarDate.year}` : 'Sem data final'"
+            disabled
+            size="md"
+            class="flex-1"
+          />
+          <UPopover :popper="{ placement: 'bottom-start' }">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              icon="i-lucide-calendar"
+              aria-label="Selecione uma data"
+            />
+            <template #content>
+              <UCalendar v-model="endCalendarDate" class="p-2" />
+            </template>
+          </UPopover>
+          <UButton
+            v-if="endCalendarDate"
+            color="warning"
+            variant="ghost"
+            size="sm"
+            icon="i-heroicons-x-mark"
+            @click="endCalendarDate = null"
+            aria-label="Limpar data"
+          />
+        </div>
+      </UFormField>
     </div>
 
     <!-- Category Section -->

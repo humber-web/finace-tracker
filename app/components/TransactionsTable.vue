@@ -27,15 +27,30 @@ type Transaction = {
 
 interface Props {
   transactions: Transaction[]
+  pageSize?: number
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  pageSize: 10
+})
+
 const emit = defineEmits<{
   delete: [ids: number[]]
   edit: [id: number]
 }>()
 
 const table = useTemplateRef('table')
+
+// Pagination state
+const page = ref(1)
+const pageCount = computed(() => Math.ceil(props.transactions.length / props.pageSize))
+
+// Paginated data
+const paginatedTransactions = computed(() => {
+  const start = (page.value - 1) * props.pageSize
+  const end = start + props.pageSize
+  return props.transactions.slice(start, end)
+})
 
 function getBadgeColor(color: string | null): 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' {
   const colorMap: Record<string, 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'> = {
@@ -158,7 +173,7 @@ const columns: TableColumn<Transaction>[] = [{
     const type = row.getValue('type') as string
     return h(UBadge, {
       color: type === 'income' ? 'success' : 'error',
-      variant: 'subtle'
+      variant: 'outline'
     }, () => type.charAt(0).toUpperCase() + type.slice(1))
   }
 }, {
@@ -184,7 +199,7 @@ const columns: TableColumn<Transaction>[] = [{
 
     return h(UBadge, {
       color: type === 'expense' ? 'error' : 'success',
-      variant: 'subtle',
+      variant: 'outline',
       class: 'font-medium'
     }, () => `${sign} ${formatted}`)
   }
@@ -259,8 +274,22 @@ function handleDeleteSelected() {
     <div class="overflow-x-auto -mx-4 sm:mx-0">
       <UTable
         ref="table"
-        :data="transactions"
+        :data="paginatedTransactions"
         :columns="columns"
+      />
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3" v-if="pageCount > 1">
+      <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 order-2 sm:order-1">
+        Mostrando {{ (page - 1) * pageSize + 1 }} a {{ Math.min(page * pageSize, transactions.length) }} de {{ transactions.length }} transações
+      </div>
+
+      <UPagination
+        v-model:page="page"
+        :total="transactions.length"
+        :page-size="pageSize"
+        class="order-1 sm:order-2"
       />
     </div>
 

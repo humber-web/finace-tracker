@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     // Public config (exposed to client)
     public: {
       appUrl: process.env.APP_URL || 'http://localhost:3000',
-      enabledOAuthProviders: ['google', 'github']
+      enabledOAuthProviders: ['google'] // GitHub disabled for now
     }
   }
 });

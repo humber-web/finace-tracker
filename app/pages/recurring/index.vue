@@ -36,7 +36,7 @@ async function handleFormSubmit(data: any) {
       });
       toast.add({
         title: "Success",
-        description: "Recurring transaction updated successfully",
+        description: "Transação recorrente atualizada com sucesso",
         color: "success",
       });
     } else {
@@ -46,7 +46,7 @@ async function handleFormSubmit(data: any) {
       });
       toast.add({
         title: "Success",
-        description: "Recurring transaction created successfully",
+        description: "Transação recorrente criada com sucesso",
         color: "success",
       });
     }
@@ -56,7 +56,7 @@ async function handleFormSubmit(data: any) {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to save recurring transaction",
+      description: "Falha ao salvar transação recorrente",
       color: "error",
     });
   }
@@ -70,7 +70,7 @@ async function handleDelete() {
 
     toast.add({
       title: "Success",
-      description: "Recurring transaction deleted",
+      description: "Transação recorrente excluída com sucesso",
       color: "success",
     });
 
@@ -79,7 +79,7 @@ async function handleDelete() {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to delete recurring transaction",
+      description: "Falha ao excluir transação recorrente",
       color: "error",
     });
   }
@@ -94,8 +94,8 @@ async function toggleActive(recurring: any) {
 
     toast.add({
       title: "Success",
-      description: `Recurring transaction ${
-        recurring.isActive ? "paused" : "activated"
+      description: `Transação recorrente ${
+        recurring.isActive ? "pausada" : "ativada"
       }`,
       color: "success",
     });
@@ -104,7 +104,7 @@ async function toggleActive(recurring: any) {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to update status",
+      description: "Falha ao atualizar status",
       color: "error",
     });
   }
@@ -126,7 +126,7 @@ async function processRecurring() {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to process recurring transactions",
+      description: "Falha ao processar transações recorrentes",
       color: "error",
     });
   }
@@ -244,7 +244,7 @@ function getFrequencyLabel(frequency: string): string {
             <!-- Amount -->
             <UBadge
               :color="recurring.type === 'income' ? 'success' : 'error'"
-              variant="subtle"
+              variant="outline"
               size="lg"
               class="font-semibold"
             >

@@ -1,135 +1,154 @@
 <script setup lang="ts">
-import { reactive, computed, watch, shallowRef } from 'vue'
-import { useFetch } from '#app'
-import { CalendarDate, parseDate, today, getLocalTimeZone } from '@internationalized/date'
-import type { RadioGroupItem } from '@nuxt/ui'
+import { reactive, computed, watch, shallowRef } from "vue";
+import { useFetch } from "#app";
+import {
+  CalendarDate,
+  parseDate,
+  today,
+  getLocalTimeZone,
+} from "@internationalized/date";
+import type { RadioGroupItem } from "@nuxt/ui";
 
 const radioItems = computed<RadioGroupItem[]>(() => [
   {
-    label: 'Despesa',
-    value: 'expense',
-    description: 'Transações que representam gastos ou saídas de dinheiro.'
+    label: "Despesa",
+    value: "expense",
+    description: "Transações que representam gastos ou saídas de dinheiro.",
   },
   {
-    label: 'Receita',
-    value: 'income',
-    description: 'Transações que representam ganhos ou entradas de dinheiro.'
+    label: "Receita",
+    value: "income",
+    description: "Transações que representam ganhos ou entradas de dinheiro.",
   },
-])
+]);
 
 interface Props {
   initialData?: {
-    amount: number
-    description: string
-    date: string
-    type: 'income' | 'expense'
-    categoryId?: number
-  }
-  submitLabel?: string
+    amount: number;
+    description: string;
+    date: string;
+    type: "income" | "expense";
+    categoryId?: number;
+  };
+  submitLabel?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  submitLabel: 'Salvar Transação'
-})
+  submitLabel: "Salvar Transação",
+});
 
 const emit = defineEmits<{
-  submit: [data: {
-    amount: number
-    description: string
-    date: string
-    type: 'income' | 'expense'
-    categoryId?: number
-  }]
-  cancel: []
-}>()
+  submit: [
+    data: {
+      amount: number;
+      description: string;
+      date: string;
+      type: "income" | "expense";
+      categoryId?: number;
+    }
+  ];
+  cancel: [];
+}>();
 
 const state = reactive({
   amount: props.initialData?.amount ? props.initialData.amount / 100 : 0,
-  description: props.initialData?.description || '',
+  description: props.initialData?.description || "",
   date: props.initialData?.date
-    ? new Date(props.initialData.date).toISOString().split('T')[0]
-    : new Date().toISOString().split('T')[0],
-  type: (props.initialData?.type || 'expense') as 'income' | 'expense',
-  categoryId: props.initialData?.categoryId || undefined
-})
+    ? new Date(props.initialData.date).toISOString().split("T")[0]
+    : new Date().toISOString().split("T")[0],
+  type: (props.initialData?.type || "expense") as "income" | "expense",
+  categoryId: props.initialData?.categoryId || undefined,
+});
 
 // Initialize calendar date from state.date
 const calendarDate = shallowRef<CalendarDate>(
   props.initialData?.date
-    ? parseDate(new Date(props.initialData.date).toISOString().split('T')[0])
+    ? parseDate(new Date(props.initialData.date).toISOString().split("T")[0])
     : today(getLocalTimeZone())
-)
+);
 
 // Sync calendar date with state.date
 watch(calendarDate, (newDate) => {
   if (newDate) {
-    state.date = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`
+    state.date = `${newDate.year}-${String(newDate.month).padStart(
+      2,
+      "0"
+    )}-${String(newDate.day).padStart(2, "0")}`;
   }
-})
+});
 
-const { data: categories } = useFetch('/api/categories')
+const { data: categories } = useFetch("/api/categories");
 
 const filteredCategories = computed(() => {
-  return categories.value?.filter(c => c.type === state.type).map(c => ({
-    label: c.name,
-    value: c.id,
-    icon: c.icon || 'i-heroicons-tag',
-    color: c.color || 'gray'
-  })) || []
-})
+  return (
+    categories.value
+      ?.filter((c) => c.type === state.type)
+      .map((c) => ({
+        label: c.name,
+        value: c.id,
+        icon: c.icon || "i-heroicons-tag",
+        color: c.color || "gray",
+      })) || []
+  );
+});
 
 const selectedCategory = computed({
-  get: () => filteredCategories.value.find(c => c.value === state.categoryId),
+  get: () => filteredCategories.value.find((c) => c.value === state.categoryId),
   set: (val) => {
-    state.categoryId = val?.value
-  }
-})
+    state.categoryId = val?.value;
+  },
+});
 
 // Reset category when type changes
-watch(() => state.type, () => {
-  state.categoryId = undefined
-})
+watch(
+  () => state.type,
+  () => {
+    state.categoryId = undefined;
+  }
+);
 
 // Add validation state tracking
 const errors = reactive({
-  amount: '',
-  description: '',
-  date: ''
-})
+  amount: "",
+  description: "",
+  date: "",
+});
 
 function validateForm() {
-  errors.amount = !state.amount ? 'Valor obrigatório' : ''
-  errors.description = !state.description ? 'Descrição obrigatória' : ''
-  errors.date = !state.date ? 'Data obrigatória' : ''
+  errors.amount = !state.amount ? "Valor obrigatório" : "";
+  errors.description = !state.description ? "Descrição obrigatória" : "";
+  errors.date = !state.date ? "Data obrigatória" : "";
 
-  return !errors.amount && !errors.description && !errors.date
+  return !errors.amount && !errors.description && !errors.date;
 }
 
 function onSubmit() {
-  if (!validateForm()) return
+  if (!validateForm()) return;
 
-  emit('submit', {
+  emit("submit", {
     ...state,
     date: state.date as string,
-    amount: Math.round(state.amount * 100)
-  })
+    amount: Math.round(state.amount * 100),
+  });
 }
 
 // Expose method for parent to call
 defineExpose({
   submit: onSubmit,
   isValid: () => {
-    validateForm()
-    return !errors.amount && !errors.description && !errors.date
-  }
-})
+    validateForm();
+    return !errors.amount && !errors.description && !errors.date;
+  },
+});
 </script>
 
 <template>
   <form @submit.prevent="onSubmit" class="w-full">
     <!-- Type Selector Section -->
     <div class="mb-6">
-      <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+      <label
+        class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4"
+      >
         Tipo de Transação <span class="text-red-500">*</span>
       </label>
       <URadioGroup
@@ -143,105 +162,78 @@ defineExpose({
     <!-- Main Form Fields -->
     <div class="space-y-5 mb-6">
       <!-- Amount -->
-      <div>
-        <UFormGroup
-          label="Valor"
-          required
-          class="space-y-2"
-        >
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Valor <span class="text-red-500">*</span>
-              <span v-if="errors.amount" class="text-red-500 text-xs font-normal">
-                - {{ errors.amount }}
-              </span>
-            </span>
-          </template>
-          <UInput
-            v-model="state.amount"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="0.00"
-            icon="i-heroicons-currency-dollar"
-            size="md"
-            class="w-full"
-          />
-        </UFormGroup>
-      </div>
+      <UFormField
+        label="Valor"
+        help="Insira o valor da transação."
+        required
+      >
+        <UInput
+          v-model="state.amount"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+          icon="i-heroicons-currency-dollar"
+          size="md"
+           class="w-full"
+        />
+      </UFormField>
 
       <!-- Description -->
-      <div>
-        <UFormGroup
-          label="Descrição"
-          required
-          class="space-y-2"
-        >
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Descrição <span class="text-red-500">*</span>
-              <span v-if="errors.description" class="text-red-500 text-xs font-normal">
-                - {{ errors.description }}
-              </span>
-            </span>
-          </template>
-          <UInput
-            v-model="state.description"
-            placeholder="ex: Compras no supermercado"
-            size="md"
-            class="w-full"
-            maxlength="100"
-          />
-          <p class="text-xs text-gray-500 dark:text-gray-400 text-right">
-            {{ state.description.length }}/100
-          </p>
-        </UFormGroup>
-      </div>
+      <UFormField
+        label="Descrição"
+        :help="`${state.description.length}/100 caracteres`"
+        required
+      >
+        <UInput
+          v-model="state.description"
+          placeholder="ex: Compras no supermercado"
+          size="md"
+          maxlength="100"
+          class="w-full"
+        />
+      </UFormField>
 
       <!-- Date -->
-      <div>
-        <UFormGroup
-          label="Data"
-          required
-          class="space-y-2"
-        >
-          <template #label>
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Data <span class="text-red-500">*</span>
-              <span v-if="errors.date" class="text-red-500 text-xs font-normal">
-                - {{ errors.date }}
-              </span>
-            </span>
-          </template>
-          <div class="flex items-center gap-2">
-            <UInput
-              :value="calendarDate ? `${calendarDate.day}/${calendarDate.month}/${calendarDate.year}` : ''"
-              disabled
-              size="md"
-              class="w-full"
+      <UFormField
+        label="Data"
+        required
+      >
+        <div class="flex items-center gap-2">
+          <UInput
+            :value="
+              calendarDate
+                ? `${calendarDate.day}/${calendarDate.month}/${calendarDate.year}`
+                : ''
+            "
+            disabled
+            size="md"
+            class="flex-1"
+          />
+          <UPopover :popper="{ placement: 'bottom-start' }">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              icon="i-lucide-calendar"
+              aria-label="Selecione uma data"
             />
-            <UPopover :popper="{ placement: 'bottom-start' }">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                icon="i-lucide-calendar"
-                aria-label="Selecione uma data"
-              />
 
-              <template #content>
-                <UCalendar v-model="calendarDate" class="p-2" />
-              </template>
-            </UPopover>
-          </div>
-        </UFormGroup>
-      </div>
+            <template #content>
+              <UCalendar v-model="calendarDate" class="p-2" />
+            </template>
+          </UPopover>
+        </div>
+      </UFormField>
     </div>
 
     <!-- Category Section -->
     <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-      <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
-        Categoria <span class="text-xs text-gray-500 dark:text-gray-400">(Opcional)</span>
+      <label
+        class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4"
+      >
+        Categoria
+        <span class="text-xs text-gray-500 dark:text-gray-400">(Opcional)</span>
       </label>
 
       <div v-if="filteredCategories.length > 0" class="space-y-4">
@@ -287,11 +279,18 @@ defineExpose({
         </UButton>
       </div>
 
-      <div v-else class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+      <div
+        v-else
+        class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
+      >
         <div class="text-center">
-          <UIcon name="i-heroicons-tag" class="w-8 h-8 mx-auto text-gray-400 mb-3" />
+          <UIcon
+            name="i-heroicons-tag"
+            class="w-8 h-8 mx-auto text-gray-400 mb-3"
+          />
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Nenhuma categoria de {{ state.type === 'income' ? 'receita' : 'despesa' }} ainda
+            Nenhuma categoria de
+            {{ state.type === "income" ? "receita" : "despesa" }} ainda
           </p>
           <NuxtLink to="/categories">
             <UButton size="sm" icon="i-heroicons-plus">
@@ -301,6 +300,5 @@ defineExpose({
         </div>
       </div>
     </div>
-
   </form>
 </template>

@@ -143,63 +143,67 @@ defineExpose({
 </script>
 
 <template>
-    <form @submit.prevent="onSubmit" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">Nome da Categoria*</label>
-          <UInput v-model="name" placeholder="e.g., Groceries, Salary" required />
-        </div>
+    <form @submit.prevent="onSubmit" class="space-y-5">
+        <!-- Category Name -->
+        <UFormField
+          label="Nome da Categoria"
+          help="Digite o nome da categoria."
+          required
+        >
+          <UInput
+            v-model="name"
+            placeholder="ex: Alimentação, Salário"
+            size="md"
+            class="w-full"
+          />
+        </UFormField>
 
-        <div>
-          <label class="block text-sm font-medium mb-2">Cor</label>
+        <!-- Color Selection -->
+        <UFormField
+          label="Cor"
+          help="Selecione uma cor para identificar a categoria."
+        >
           <div class="grid grid-cols-4 gap-2">
-            <button
+            <UButton
               v-for="option in colorOptions"
               :key="option.value"
-              type="button"
               @click="color = option.value"
-              :class="[
-                'px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium',
-                color === option.value
-                  ? 'border-gray-900 dark:border-white shadow-md'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
-              ]"
-              :style="{
-                backgroundColor: color === option.value ? getColorValue(option.value, '100') : 'transparent',
-                color: color === option.value ? getColorValue(option.value, '800') : 'currentColor'
-              }"
+              :variant="color === option.value ? 'solid' : 'outline'"
+              :color="color === option.value ? 'primary' : 'neutral'"
+              size="sm"
+              class="justify-start"
             >
-              <span class="flex items-center gap-2">
+              <template #leading>
                 <span
                   class="w-3 h-3 rounded-full"
                   :style="{ backgroundColor: getColorValue(option.value, '500') }"
                 ></span>
-                {{ option.label }}
-              </span>
-            </button>
+              </template>
+              {{ option.label }}
+            </UButton>
           </div>
-        </div>
+        </UFormField>
 
-        <div>
-          <label class="block text-sm font-medium mb-2">Ícone</label>
-          <div class="grid grid-cols-6 gap-2 max-h-64 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <button
+        <!-- Icon Selection -->
+        <UFormField
+          label="Ícone"
+          help="Escolha um ícone da galeria ou digite um personalizado."
+        >
+          <UContainer class="grid grid-cols-4 gap-2 max-h-52 overflow-y-auto p-2  rounded-lg">
+            <UButton
               v-for="option in iconOptions"
               :key="option.name"
-              type="button"
               @click="icon = option.name"
-              :class="[
-                'flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all',
-                icon === option.name
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-              ]"
+              :variant="icon === option.name ? 'solid' : 'outline'"
+              :color="icon === option.name ? 'primary' : 'neutral'"
+              size="sm"
+              class="flex-col h-auto py-2 px-1"
               :title="option.label"
             >
               <UIcon :name="option.name" class="w-6 h-6" />
-              <span class="text-[10px] text-center leading-tight">{{ option.label }}</span>
-            </button>
-          </div>
-          <p class="text-xs text-gray-500 mt-2">Selecione um ícone ou use um personalizado</p>
+              <span class="text-[10px] text-center leading-tight mt-1">{{ option.label }}</span>
+            </UButton>
+          </UContainer>
           <UInput
             v-model="icon"
             placeholder="i-heroicons-tag"
@@ -210,10 +214,6 @@ defineExpose({
               <UIcon :name="icon" class="w-4 h-4" />
             </template>
           </UInput>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-4">
-          
-        </div>
+        </UFormField>
       </form>
 </template>

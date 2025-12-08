@@ -59,7 +59,7 @@ async function handleCreate(data: any) {
 
     toast.add({
       title: "Success",
-      description: "Budget created successfully",
+      description: "Orçamento criado com sucesso",
       color: "success",
     });
 
@@ -69,7 +69,7 @@ async function handleCreate(data: any) {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to create budget",
+      description: "Falha ao criar orçamento",
       color: "error",
     });
   }
@@ -84,7 +84,7 @@ async function handleUpdate(data: any) {
 
     toast.add({
       title: "Success",
-      description: "Budget updated successfully",
+      description: "Orçamento atualizado com sucesso",
       color: "success",
     });
 
@@ -94,7 +94,7 @@ async function handleUpdate(data: any) {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to update budget",
+      description: "Falha ao atualizar orçamento",
       color: "error",
     });
   }
@@ -109,7 +109,7 @@ async function handleDelete(budgetId: number) {
 
     toast.add({
       title: "Success",
-      description: "Budget deleted successfully",
+      description: "Orçamento excluído com sucesso",
       color: "success",
     });
     isDeleteModalOpen.value = false;
@@ -118,7 +118,7 @@ async function handleDelete(budgetId: number) {
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to delete budget",
+      description: "Falha ao excluir orçamento",
       color: "error",
     });
   }

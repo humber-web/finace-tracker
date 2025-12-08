@@ -54,6 +54,9 @@ const { data: trendsData } = await useFetch('/api/analytics/trends', {
   watch: [startDate, endDate, groupBy]
 })
 
+// Fetch categories to determine types
+const { data: allCategories } = await useFetch('/api/categories')
+
 const groupByOptions = [
   { label: 'Diário', value: 'day' },
   { label: 'Semanal', value: 'week' },
@@ -108,16 +111,24 @@ const netIncomeChart = computed(() => {
   }
 })
 
-// Top categories
+// Top categories with type information
 const topCategories = computed(() => {
-  if (!trendsData.value?.trends) return []
+  if (!trendsData.value?.trends || !allCategories.value) return []
 
-  const categoryTotals: Record<string, { name: string; amount: number; color: string | null }> = {}
+  const categoryTotals: Record<string, { name: string; amount: number; color: string | null; type: string }> = {}
 
+  // Collect all category totals
   for (const trend of trendsData.value.trends) {
     for (const [categoryId, data] of Object.entries(trend.categoryBreakdown)) {
       if (!categoryTotals[categoryId]) {
-        categoryTotals[categoryId] = { name: data.name, amount: 0, color: data.color }
+        // Find the category type from the categories list
+        const category = allCategories.value.find((c: any) => c.id === parseInt(categoryId))
+        categoryTotals[categoryId] = {
+          name: data.name,
+          amount: 0,
+          color: data.color,
+          type: category?.type || 'expense'
+        }
       }
       categoryTotals[categoryId].amount += data.amount
     }
@@ -282,7 +293,7 @@ const chartOptions = {
       <UCard>
         <div class="text-center p-2">
           <p class="text-xs sm:text-sm opacity-70 mb-2">Receitas Totais</p>
-          <UBadge color="success" variant="subtle" size="lg" class="text-base sm:text-xl font-bold">
+          <UBadge color="success" variant="outline" size="lg" class="text-base sm:text-xl font-bold">
             {{ formatCurrency(trendsData.summary.totalIncome) }}
           </UBadge>
         </div>
@@ -290,7 +301,7 @@ const chartOptions = {
       <UCard>
         <div class="text-center p-2">
           <p class="text-xs sm:text-sm opacity-70 mb-2">Despesas Totais</p>
-          <UBadge color="error" variant="subtle" size="lg" class="text-base sm:text-xl font-bold">
+          <UBadge color="error" variant="outline" size="lg" class="text-base sm:text-xl font-bold">
             {{ formatCurrency(trendsData.summary.totalExpense) }}
           </UBadge>
         </div>
@@ -300,7 +311,7 @@ const chartOptions = {
           <p class="text-xs sm:text-sm opacity-70 mb-2">Receita Líquida</p>
           <UBadge
             :color="trendsData.summary.netIncome >= 0 ? 'success' : 'error'"
-            variant="subtle"
+            variant="outline"
             size="lg"
             class="text-base sm:text-xl font-bold"
           >
@@ -344,7 +355,7 @@ const chartOptions = {
     <!-- Top Categories -->
     <UCard>
       <template #header>
-        <h3 class="text-base sm:text-lg font-semibold">Principais Categorias de Gastos</h3>
+        <h3 class="text-base sm:text-lg font-semibold">Principais Categorias</h3>
       </template>
 
       <div class="space-y-2 sm:space-y-3">
@@ -367,7 +378,11 @@ const chartOptions = {
             <p class="font-medium text-sm sm:text-base truncate">{{ category.name }}</p>
           </div>
           <div class="text-right">
-            <UBadge color="info" variant="subtle" class="font-semibold text-xs sm:text-sm">
+            <UBadge
+              :color="category.type === 'income' ? 'success' : 'error'"
+              variant="outline"
+              class="font-semibold text-xs sm:text-sm"
+            >
               {{ formatCurrency(category.amount) }}
             </UBadge>
           </div>

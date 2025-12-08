@@ -9,10 +9,11 @@ definePageMeta({
 type Category = {
   id: number;
   name: string;
-  type: "income" | "expense";
+  type: string; // 'income' | 'expense'
   color: string | null;
   icon: string | null;
-  createdAt: string;
+  createdAt: string | Date;
+  isSystem: boolean;
 };
 
 const route = useRoute();
@@ -30,9 +31,9 @@ const tabs = [
   { key: "income", label: "Categorias de Receitas" },
 ];
 
-const { data: categories, refresh: refreshCategories } = await useFetch(
-  "/api/categories"
-);
+const { data: categories, refresh: refreshCategories } = await useFetch<
+  Category[]
+>("/api/categories");
 
 const filteredCategories = computed(
   () => categories.value?.filter((c) => c.type === activeTab.value) || []
@@ -88,7 +89,7 @@ async function handleFormSubmit(data: {
         body: data,
       });
       useToast().add({
-        title: "Category created successfully",
+        title: "Categoria criada com sucesso",
         color: "success",
       });
     } else if (formMode.value === "edit" && editingCategory.value) {
@@ -101,7 +102,7 @@ async function handleFormSubmit(data: {
         },
       });
       useToast().add({
-        title: "Category updated successfully",
+        title: "Categoria atualizada com sucesso",
         color: "success",
       });
     }
@@ -125,14 +126,14 @@ async function handleDeleteConfirm() {
       method: "DELETE",
     });
     useToast().add({
-      title: "Category deleted successfully",
+      title: "Categoria eliminada com sucesso",
       color: "success",
     });
     await refreshCategories();
     deletingCategory.value = null;
     // The modal will close itself via the emit in CategoryDeleteModal
   } catch (error) {
-    useToast().add({ title: "Error deleting category", color: "error" });
+    useToast().add({ title: "Erro ao eliminar categoria", color: "error" });
   }
 }
 </script>
