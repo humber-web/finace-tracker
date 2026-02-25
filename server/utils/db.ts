@@ -1,22 +1,23 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import * as schema from '../database/schema';
-import fs from 'node:fs';
-import path from 'node:path';
 
 const config = useRuntimeConfig();
 
-// Ensure the directory for the database exists (crucial for Dokploy Volumes)
-const dbFile = config.dbPath || './finance.db';
-const dbDir = path.dirname(dbFile);
+// Initialize PostgreSQL connection
+const pool = new Pool({
+  connectionString: config.dbUrl || process.env.DATABASE_URL,
+});
 
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
+// Log database connection status
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('Failed to connect to the database:', err.message);
+  } else {
+    console.log('Successfully connected to the database.');
+    release();
+  }
+});
 
-const sqlite = new Database(dbFile);
-
-// Enable WAL mode for better performance with SQLite
-sqlite.pragma('journal_mode = WAL');
-
-export const db = drizzle(sqlite, { schema });
+// Initialize Drizzle with the PostgreSQL pool and schema
+export const db = drizzle(pool, { schema });
