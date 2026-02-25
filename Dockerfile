@@ -13,30 +13,28 @@ RUN pnpm build
 FROM node:20-slim
 WORKDIR /app
 
-# Install runtime library for SQLite
+# Install native sqlite3 library
 RUN apt-get update && apt-get install -y libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
-# Copy built Nuxt output
+# 1. First, copy the .output and the node_modules from builder
 COPY --from=builder /app/.output ./.output
-# Copy all node_modules so drizzle-kit and native bindings are available
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/server/database/schema.ts ./server/database/schema.ts
 
-# --- THE FIX ---
-# Create the directory Nitro is looking in and copy the compiled library there
+# 2. Now that node_modules exists, we can move the bindings into the Nitro server folder
 RUN mkdir -p /app/.output/server/node_modules && \
     cp -r /app/node_modules/better-sqlite3 /app/.output/server/node_modules/ && \
-    cp -r /app/node_modules/bindings /app/.output/server/node_modules/
-# ----------------
+    if [ -d "/app/node_modules/bindings" ]; then cp -r /app/node_modules/bindings /app/.output/server/node_modules/; fi
 
+# Environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NITRO_HOST=0.0.0.0
-# Matches your Dokploy Volume
 ENV NUXT_DB_PATH=/app/data/finance.db
 
 EXPOSE 3000
 
-# Push schema changes then start
-CMD npx drizzle-kit push && node .output/server/index.mjs
+# JSON Arguments recommended for CMD (Fixes the warning)
+# We use a shell script format to allow running two commands
+CMD ["sh", "-c", "npx drizzle-kit push && node .output/server/index.mjs"]
