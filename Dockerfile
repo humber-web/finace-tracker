@@ -5,9 +5,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 COPY pnpm-lock.yaml package.json ./
-# Install ALL dependencies (including drizzle-kit)
 RUN pnpm install --frozen-lockfile
-
 COPY . .
 RUN pnpm build
 
@@ -15,28 +13,30 @@ RUN pnpm build
 FROM node:20-slim
 WORKDIR /app
 
-# Install native library for SQLite
+# Install runtime library for SQLite
 RUN apt-get update && apt-get install -y libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Copy built Nuxt output
 COPY --from=builder /app/.output ./.output
-
-# FIX 1: Copy better-sqlite3 binary specifically
-RUN mkdir -p /app/.output/server/node_modules/better-sqlite3
-COPY --from=builder /app/node_modules/better-sqlite3 /app/.output/server/node_modules/better-sqlite3
-
-# FIX 2: Copy drizzle-kit and its dependencies so 'npx drizzle-kit' works
-COPY --from=builder /app/node_modules /app/node_modules
+# Copy all node_modules so drizzle-kit and native bindings are available
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/server/database/schema.ts ./server/database/schema.ts
+
+# --- THE FIX ---
+# Create the directory Nitro is looking in and copy the compiled library there
+RUN mkdir -p /app/.output/server/node_modules && \
+    cp -r /app/node_modules/better-sqlite3 /app/.output/server/node_modules/ && \
+    cp -r /app/node_modules/bindings /app/.output/server/node_modules/
+# ----------------
 
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NITRO_HOST=0.0.0.0
-# Ensure this matches your Dokploy Volume mount
+# Matches your Dokploy Volume
 ENV NUXT_DB_PATH=/app/data/finance.db
 
 EXPOSE 3000
 
-# Push schema changes (creates file if missing) then start
+# Push schema changes then start
 CMD npx drizzle-kit push && node .output/server/index.mjs
