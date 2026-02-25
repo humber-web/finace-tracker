@@ -28,16 +28,6 @@ export default defineNuxtConfig({
       appUrl: process.env.APP_URL || "https://finace-tracker-three.vercel.app",
       enabledOAuthProviders: ["google"], // GitHub disabled for now
     },
-    hooks: {
-    'nitro:config'(config) {
-      // We force these as externals so Nitro doesn't try to bundle them
-      config.externals = config.externals || {}
-      config.externals.external = [
-        ...(config.externals.external || []),
-        'better-sqlite3',
-        'bindings'
-      ]
-    }
-  }
+   
   },
 });
