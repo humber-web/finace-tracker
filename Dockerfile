@@ -5,7 +5,6 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 COPY pnpm-lock.yaml package.json ./
-# Install ALL deps for building and migration support
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
@@ -17,20 +16,16 @@ WORKDIR /app
 # Install native sqlite3 library
 RUN apt-get update && apt-get install -y libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
-# 1. Copy the build output
+# 1. Copy the build and ALL node_modules
 COPY --from=builder /app/.output ./.output
-
-# 2. Copy EVERYTHING needed for migrations
-# We copy node_modules here because drizzle-kit needs the full deps to read the config
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
 COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/server/database/schema.ts ./server/database/schema.ts
 
-# 3. FIX: Create the symlink for Nitro so better-sqlite3 is found
-RUN mkdir -p /app/.output/server/node_modules && \
-    ln -s /app/node_modules/better-sqlite3 /app/.output/server/node_modules/better-sqlite3 && \
-    ln -s /app/node_modules/bindings /app/.output/server/node_modules/bindings
+# 2. THE CRITICAL LINK: Link the root node_modules into the Nitro server folder
+# This makes /app/.output/server/node_modules point to /app/node_modules
+RUN mkdir -p /app/.output/server && \
+    ln -s /app/node_modules /app/.output/server/node_modules
 
 # Environment variables
 ENV NODE_ENV=production
@@ -40,5 +35,5 @@ ENV NUXT_DB_PATH=/app/data/finance.db
 
 EXPOSE 3000
 
-# Use local drizzle-kit binary to avoid npx download/isolation issues
+# Push changes then start the app
 CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit push && node .output/server/index.mjs"]
