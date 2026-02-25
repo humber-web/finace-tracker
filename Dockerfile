@@ -1,36 +1,37 @@
 # Stage 1: Build the Nuxt app
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
-# Set working directory
+# Enable pnpm directly via corepack (faster than npm install -g pnpm)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
+# Install all dependencies (including devDeps for the build)
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the app files
 COPY . .
 
-# Build the Nuxt app
+# Build the Nuxt app (generates the .output folder)
 RUN pnpm build
 
 # Stage 2: Run the app
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
+
+# Set environment to production
+ENV NODE_ENV=production
+ENV PORT=3000
 
 # Copy built files from the builder stage
 COPY --from=builder /app/.output /app/.output
-COPY --from=builder /app/finance.db /app/finance.db
-COPY --from=builder /app/.env /app/.env
 
-# Install production dependencies
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+# Expose the Nitro port
+EXPOSE 3000
 
-# Expose the port
-EXPOSE 3001
-
-# Start the app
+# Start the app using the Nitro server entry point
 CMD ["node", ".output/server/index.mjs"]
