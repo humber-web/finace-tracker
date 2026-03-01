@@ -306,14 +306,14 @@ function getAlertColor(level: string) {
       </template>
       <template #footer="{ close }">
         <UButton label="Cancelar" variant="outline" @click="close" />
-        <UButton label="Criar Orcamento" color="primary" @click="formRef?.onSubmit()" />
+        <UButton label="Criar Orçamento" color="primary" @click="formRef?.onSubmit()" />
       </template>
     </UModal>
 
     <UModal
       v-model:open="isEditModalOpen"
       title="Editar Orçamento"
-      description="Atualize o limite do seu orcamento"
+      description="Atualize o limite do seu orçamento"
       :ui="{ footer: 'justify-end' }"
     >
       <template #body>
@@ -328,7 +328,7 @@ function getAlertColor(level: string) {
       <template #footer="{ close }">
         <UButton label="Cancelar" variant="outline" @click="close" />
         <UButton
-          label="Atualizar Orcamento"
+          label="Atualizar Orçamento"
           color="primary"
           @click="formRef?.onSubmit()"
         />
@@ -344,7 +344,7 @@ function getAlertColor(level: string) {
     <template #footer>
       <UButton label="Cancelar" variant="outline" @click="isDeleteModalOpen = false" />
       <UButton
-        label="Excluir Orcamento"
+        label="Excluir Orçamento"
         color="error"
         @click="handleDelete(deletingBudget.id)"
       />
